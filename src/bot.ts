@@ -123,10 +123,12 @@ Type /help for more info or /buy to get more credits.
             reply_markup: {
                 inline_keyboard: [
                     [
-                        { text: `💎 ${PACKS.SMALL.credits} Credits ($5.00)`, callback_data: `buy_${PACKS.SMALL.id}` }
+                        { text: `💎 ${PACKS.TIER_1.credits} Credits ($${PACKS.TIER_1.amount / 100})`, callback_data: `buy_${PACKS.TIER_1.id}` },
+                        { text: `💎 ${PACKS.TIER_2.credits} Credits ($${PACKS.TIER_2.amount / 100})`, callback_data: `buy_${PACKS.TIER_2.id}` }
                     ],
                     [
-                        { text: `💎 ${PACKS.LARGE.credits} Credits ($15.00)`, callback_data: `buy_${PACKS.LARGE.id}` }
+                        { text: `💎 ${PACKS.TIER_3.credits} Credits ($${PACKS.TIER_3.amount / 100})`, callback_data: `buy_${PACKS.TIER_3.id}` },
+                        { text: `💎 ${PACKS.TIER_4.credits} Credits ($${PACKS.TIER_4.amount / 100})`, callback_data: `buy_${PACKS.TIER_4.id}` }
                     ]
                 ]
             }
@@ -208,11 +210,14 @@ Select an option to change:
 
         // Payment Callbacks
         if (data.startsWith('buy_')) {
-            const packId = data.split('_')[1];
-            if (packId === 'small' || packId === 'large') {
+            const packId = data.split('_').slice(1).join('_'); // Handle potential underscores in ID if any, though ours are simple
+            // Check if valid pack
+            const isValidPack = Object.values(PACKS).some(p => p.id === packId);
+
+            if (isValidPack) {
                 try {
                     bot.answerCallbackQuery(callbackQuery.id, { text: 'Generating payment link...' });
-                    const url = await paymentService.createCheckoutSession(chatId.toString(), packId as any);
+                    const url = await paymentService.createCheckoutSession(chatId.toString(), packId);
                     bot.sendMessage(chatId, `Please pay using this link:\n[Click here to Pay](${url})`, { parse_mode: 'Markdown' });
                 } catch (e: any) {
                     bot.sendMessage(chatId, `❌ Error creating payment: ${e.message}`);
@@ -228,10 +233,12 @@ Select an option to change:
                 reply_markup: {
                     inline_keyboard: [
                         [
-                            { text: `💎 ${PACKS.SMALL.credits} Credits ($5.00)`, callback_data: `buy_${PACKS.SMALL.id}` }
+                            { text: `💎 ${PACKS.TIER_1.credits} ($${PACKS.TIER_1.amount / 100})`, callback_data: `buy_${PACKS.TIER_1.id}` },
+                            { text: `💎 ${PACKS.TIER_2.credits} ($${PACKS.TIER_2.amount / 100})`, callback_data: `buy_${PACKS.TIER_2.id}` }
                         ],
                         [
-                            { text: `💎 ${PACKS.LARGE.credits} Credits ($15.00)`, callback_data: `buy_${PACKS.LARGE.id}` }
+                            { text: `💎 ${PACKS.TIER_3.credits} ($${PACKS.TIER_3.amount / 100})`, callback_data: `buy_${PACKS.TIER_3.id}` },
+                            { text: `💎 ${PACKS.TIER_4.credits} ($${PACKS.TIER_4.amount / 100})`, callback_data: `buy_${PACKS.TIER_4.id}` }
                         ]
                     ]
                 }
@@ -361,10 +368,11 @@ Select an option to change:
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                { text: `💎 ${PACKS.SMALL.credits} Credits ($5.00)`, callback_data: `buy_${PACKS.SMALL.id}` }
+                                { text: `💎 ${PACKS.TIER_1.credits} ($${PACKS.TIER_1.amount / 100})`, callback_data: `buy_${PACKS.TIER_1.id}` },
+                                { text: `💎 ${PACKS.TIER_2.credits} ($${PACKS.TIER_2.amount / 100})`, callback_data: `buy_${PACKS.TIER_2.id}` }
                             ],
                             [
-                                { text: `💎 ${PACKS.LARGE.credits} Credits ($15.00)`, callback_data: `buy_${PACKS.LARGE.id}` }
+                                { text: '🛍️ View All Packs', callback_data: 'cmd_buy' }
                             ]
                         ]
                     }
@@ -586,10 +594,11 @@ Select an action:
                                 reply_markup: {
                                     inline_keyboard: [
                                         [
-                                            { text: `💎 ${PACKS.SMALL.credits} Credits ($5.00)`, callback_data: `buy_${PACKS.SMALL.id}` }
+                                            { text: `💎 ${PACKS.TIER_1.credits} ($${PACKS.TIER_1.amount / 100})`, callback_data: `buy_${PACKS.TIER_1.id}` },
+                                            { text: `💎 ${PACKS.TIER_2.credits} ($${PACKS.TIER_2.amount / 100})`, callback_data: `buy_${PACKS.TIER_2.id}` }
                                         ],
                                         [
-                                            { text: `💎 ${PACKS.LARGE.credits} Credits ($15.00)`, callback_data: `buy_${PACKS.LARGE.id}` }
+                                            { text: '🛍️ View All Packs', callback_data: 'cmd_buy' }
                                         ]
                                     ]
                                 }
@@ -643,10 +652,11 @@ Select an action:
                     reply_markup: {
                         inline_keyboard: [
                             [
-                                { text: `💎 ${PACKS.SMALL.credits} Credits ($5.00)`, callback_data: `buy_${PACKS.SMALL.id}` }
+                                { text: `💎 ${PACKS.TIER_1.credits} ($${PACKS.TIER_1.amount / 100})`, callback_data: `buy_${PACKS.TIER_1.id}` },
+                                { text: `💎 ${PACKS.TIER_2.credits} ($${PACKS.TIER_2.amount / 100})`, callback_data: `buy_${PACKS.TIER_2.id}` }
                             ],
                             [
-                                { text: `💎 ${PACKS.LARGE.credits} Credits ($15.00)`, callback_data: `buy_${PACKS.LARGE.id}` }
+                                { text: '🛍️ View All Packs', callback_data: 'cmd_buy' }
                             ]
                         ]
                     }
@@ -767,10 +777,11 @@ Select an action:
                 reply_markup: {
                     inline_keyboard: [
                         [
-                            { text: `💎 ${PACKS.SMALL.credits} Credits ($5.00)`, callback_data: `buy_${PACKS.SMALL.id}` }
+                            { text: `💎 ${PACKS.TIER_1.credits} ($${PACKS.TIER_1.amount / 100})`, callback_data: `buy_${PACKS.TIER_1.id}` },
+                            { text: `💎 ${PACKS.TIER_2.credits} ($${PACKS.TIER_2.amount / 100})`, callback_data: `buy_${PACKS.TIER_2.id}` }
                         ],
                         [
-                            { text: `💎 ${PACKS.LARGE.credits} Credits ($15.00)`, callback_data: `buy_${PACKS.LARGE.id}` }
+                            { text: '🛍️ View All Packs', callback_data: 'cmd_buy' }
                         ]
                     ]
                 }

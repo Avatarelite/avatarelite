@@ -18,17 +18,33 @@ function getStripe(): Stripe | null {
 }
 
 export const PACKS = {
-    SMALL: {
-        id: 'small',
-        name: 'Pack 1: 50 Credits',
-        credits: config.smallPackCredits,
-        priceId: config.smallPackPriceId || 'price_small_placeholder' // We'll user helper to create ad-hoc price if needed or assume manually created
+    TIER_1: {
+        id: 'tier_1',
+        name: 'Pack 1: 25 Credits',
+        credits: 25,
+        priceId: 'price_tier_1_placeholder',
+        amount: 500 // $5.00
     },
-    LARGE: {
-        id: 'large',
-        name: 'Pack 2: 200 Credits',
-        credits: config.largePackCredits,
-        priceId: config.largePackPriceId || 'price_large_placeholder'
+    TIER_2: {
+        id: 'tier_2',
+        name: 'Pack 2: 50 Credits',
+        credits: 50,
+        priceId: 'price_tier_2_placeholder',
+        amount: 1000 // $10.00
+    },
+    TIER_3: {
+        id: 'tier_3',
+        name: 'Pack 3: 160 Credits',
+        credits: 160,
+        priceId: 'price_tier_3_placeholder',
+        amount: 3000 // $30.00
+    },
+    TIER_4: {
+        id: 'tier_4',
+        name: 'Pack 4: 260 Credits',
+        credits: 260,
+        priceId: 'price_tier_4_placeholder',
+        amount: 5000 // $50.00
     }
 };
 
@@ -37,12 +53,12 @@ export const paymentService = {
      * Creates a Stripe Checkout Session for a one-time payment.
      * We pass the telegram_id in metadata to fulfill the order later.
      */
-    createCheckoutSession: async (telegramId: string, packId: 'small' | 'large') => {
-        const pack = PACKS[packId.toUpperCase() as keyof typeof PACKS];
-        if (!pack) throw new Error('Invalid pack selected');
+    createCheckoutSession: async (telegramId: string, packId: string) => {
+        // Find pack by ID
+        const packKey = Object.keys(PACKS).find(key => PACKS[key as keyof typeof PACKS].id === packId);
+        const pack = packKey ? PACKS[packKey as keyof typeof PACKS] : null;
 
-        // Note: In a real app with Price IDs from env, use `price: pack.priceId`
-        // consistently. For this demo, we can also use ad-hoc line items if no price ID is set.
+        if (!pack) throw new Error('Invalid pack selected');
 
         const line_items = [];
         if (pack.priceId.includes('placeholder')) {
@@ -53,7 +69,7 @@ export const paymentService = {
                     product_data: {
                         name: pack.name,
                     },
-                    unit_amount: packId === 'small' ? 500 : 1500, // $5.00 or $15.00 example
+                    unit_amount: pack.amount,
                 },
                 quantity: 1,
             });
