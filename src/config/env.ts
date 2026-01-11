@@ -13,6 +13,8 @@ interface Config {
     largePackPriceId?: string;
     supabaseUrl: string;
     supabaseKey: string;
+    webhookUrl?: string;
+    seedreamApiKey: string;
 }
 
 const requiredEnvVars = [
@@ -36,5 +38,7 @@ export const config: Config = {
     smallPackCredits: 50,
     largePackCredits: 200,
     supabaseUrl: process.env.SUPABASE_URL || '',
-    supabaseKey: process.env.SUPABASE_KEY || ''
+    supabaseKey: process.env.SUPABASE_KEY || '',
+    webhookUrl: process.env.WEBHOOK_URL || process.env.RENDER_EXTERNAL_URL || (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : undefined),
+    seedreamApiKey: process.env.SEEDREAM_API_KEY || '',
 };

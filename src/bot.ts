@@ -1,12 +1,12 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { NanoBananaService } from './services/nanoBanana';
+import { SeedreamService } from './services/seedream';
 import axios from 'axios';
 import { userModel } from './db/users';
 import { paymentService, PACKS } from './payments/stripe';
 
 // Create a bot that uses 'polling' to fetch new updates
 let bot: TelegramBot;
-const nanoBanana = new NanoBananaService();
+const seedream = new SeedreamService();
 
 interface ReferenceImage {
     buffer: Buffer;
@@ -48,14 +48,44 @@ function getUserState(chatId: number): UserState {
     return userStates.get(chatId)!;
 }
 
-export function startBot() {
+import { Application } from 'express';
+
+// ... (previous imports)
+
+// ...
+
+export async function startBot(app: Application) {
     const token = process.env.TELEGRAM_BOT_TOKEN;
 
     if (!token) {
         throw new Error('TELEGRAM_BOT_TOKEN is not set in environment variables.');
     }
 
-    bot = new TelegramBot(token, { polling: true });
+    // Determine environment (Webhook vs Polling)
+    const webhookUrl = process.env.WEBHOOK_URL || process.env.RENDER_EXTERNAL_URL || (`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`);
+    const isProduction = !!webhookUrl;
+
+    if (isProduction) {
+        console.log(`Starting bot in WEBHOOK mode. URL: ${webhookUrl}`);
+        bot = new TelegramBot(token, { polling: false });
+
+        // Set up the webhook
+        const finalUrl = `${webhookUrl}/bot${token}`;
+        await bot.setWebHook(finalUrl);
+
+        // Add route handler
+        app.post(`/bot${token}`, (req, res) => {
+            bot.processUpdate(req.body);
+            res.sendStatus(200);
+        });
+    } else {
+        console.log('Starting bot in POLLING mode (Local).');
+        bot = new TelegramBot(token, { polling: true });
+
+        // Clear any previous webhook to ensure polling works
+        await bot.deleteWebHook();
+    }
+
     console.log('Bot is starting...');
 
     // --- Command Handlers ---
@@ -101,11 +131,9 @@ Type /help for more info or /buy to get more credits.
 
 - **Generate Image**: Type your prompt (e.g., "A futuristic city").
 - **Edit Image**: Upload a photo with a caption.
-- **Settings**: Use /menu to change Ratio (1:1, 16:9, Auto) or Quality.
-- **Multi-Image**: Use /menu -> "Upload References" to send up to 5 images, then type your prompt.
 - **Credits**: /credits to check balance, /buy to purchase more.
 
-*Powered by Nano Banana API*
+*Powered by Seedream 4.5 (ByteDance)*
     `;
         bot.sendMessage(chatId, helpMessage, { parse_mode: 'Markdown' });
     });
@@ -390,7 +418,7 @@ Select an option to change:
             const qualityPrompt = enhancePrompt(prompt, state.quality);
 
             try {
-                const result = await nanoBanana.generateImageFromImage([state.editingImage.buffer], qualityPrompt, finalRatio);
+                const result = await seedream.generateImageFromImage([state.editingImage.buffer], qualityPrompt, finalRatio);
                 handleGenerationResult(chatId, result, state.quality);
             } catch (e: any) {
                 bot.sendMessage(chatId, `❌ Error: ${e.message}`);
@@ -624,7 +652,7 @@ Select an action:
 
                         const finalRatio = resolveAspectRatio(state.aspectRatio, [refImage]); // Use uploaded image for ratio logic
 
-                        const result = await nanoBanana.generateImageFromImage(allBuffers, qualityPrompt, finalRatio);
+                        const result = await seedream.generateImageFromImage(allBuffers, qualityPrompt, finalRatio);
                         handleGenerationResult(chatId, result, state.quality);
                     } else {
                         // Photo without caption -> Assume adding to refs. NO CHARGE.
@@ -688,7 +716,7 @@ Select an action:
                 // For ratio, prioritize session images, then default to auto/square
                 const finalRatio = resolveAspectRatio(state.aspectRatio, state.referenceImages);
 
-                const result = await nanoBanana.generateImageFromImage(allBuffers, qualityPrompt, finalRatio);
+                const result = await seedream.generateImageFromImage(allBuffers, qualityPrompt, finalRatio);
                 handleGenerationResult(chatId, result, state.quality);
 
                 // Clear session refs but keep mode?
@@ -696,7 +724,7 @@ Select an action:
             } else {
                 bot.sendMessage(chatId, '🎨 Generating your image... please wait.');
                 const finalRatio = state.aspectRatio === 'auto' ? '1:1' : state.aspectRatio;
-                const result = await nanoBanana.generateImageFromText(qualityPrompt, finalRatio);
+                const result = await seedream.generateImageFromText(qualityPrompt, finalRatio);
                 handleGenerationResult(chatId, result, state.quality);
             }
         }

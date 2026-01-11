@@ -15,5 +15,5 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
-      - key: NANO_BANANA_API_KEY
+      - key: SEEDREAM_API_KEY
         sync: false

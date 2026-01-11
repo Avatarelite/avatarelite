@@ -32,6 +32,9 @@ app.post('/payments/webhook', express.raw({ type: 'application/json' }), async (
     }
 });
 
+// JSON Middleware for other routes (Telegram Bot)
+app.use(express.json());
+
 // Start Server
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
@@ -39,7 +42,7 @@ app.listen(PORT, () => {
 
 // Start the bot
 try {
-    startBot();
+    startBot(app);
 } catch (error) {
     console.error('Failed to start bot:', error);
 }
