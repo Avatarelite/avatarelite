@@ -11,7 +11,7 @@ interface GenerateImageResponse {
 }
 
 export class SeedreamService {
-    private baseUrl = 'https://open.byteplus.com/v1';
+    private baseUrl = 'https://api.byteplus.com/v1';
     private modelId = 'seedream-4-5-251128';
 
     private getApiKey(): string {
