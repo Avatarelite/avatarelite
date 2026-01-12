@@ -3,7 +3,7 @@ import express from 'express';
 import { startBot } from './bot';
 import { paymentService } from './payments/stripe';
 
-// Load environment variables
+// Load environment variables (Trigger Rebuild)
 dotenv.config();
 
 const app = express();

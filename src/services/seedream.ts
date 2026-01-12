@@ -68,8 +68,11 @@ export class SeedreamService {
             return { success: false, error: 'No image data. Full Response: ' + JSON.stringify(data) };
 
         } catch (error: any) {
-            console.error('Seedream Text-to-Image Error:', error.message);
-            if (error.response) console.error(JSON.stringify(error.response.data, null, 2));
+            console.error('Seedream Text-to-Image Error:', error.message, error.code);
+            if (error.response) {
+                console.error("Status:", error.response.status);
+                console.error("Data:", JSON.stringify(error.response.data, null, 2));
+            }
             return { success: false, error: error.response?.data?.error?.message || error.message };
         }
     }
