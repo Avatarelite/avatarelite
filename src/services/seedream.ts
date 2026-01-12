@@ -52,8 +52,18 @@ export class SeedreamService {
                     return { success: true, imageBuffer: Buffer.from(item.b64_json, 'base64') };
                 } else if (item.url) {
                     return { success: true, imageUrl: item.url };
+                } else if (item.image_url) {
+                    // Some APIs use image_url
+                    return { success: true, imageUrl: item.image_url };
                 }
+            } else if (data.images && data.images.length > 0) {
+                // Format: { images: ["url1", "url2"] }
+                return { success: true, imageUrl: data.images[0] };
+            } else if (data.output && data.output.url) {
+                // Format: { output: { url: "..." } }
+                return { success: true, imageUrl: data.output.url };
             }
+
             console.error("No image data found. Full Response:", JSON.stringify(data, null, 2));
             return { success: false, error: 'No image data. Full Response: ' + JSON.stringify(data) };
 
@@ -104,10 +114,17 @@ export class SeedreamService {
                     return { success: true, imageBuffer: Buffer.from(item.b64_json, 'base64') };
                 } else if (item.url) {
                     return { success: true, imageUrl: item.url };
+                } else if (item.image_url) {
+                    return { success: true, imageUrl: item.image_url };
                 }
+            } else if (data.images && data.images.length > 0) {
+                return { success: true, imageUrl: data.images[0] };
+            } else if (data.output && data.output.url) {
+                return { success: true, imageUrl: data.output.url };
             }
 
-            return { success: false, error: 'No image data in response' };
+            console.error("No image data found (Img2Img). Full Response:", JSON.stringify(data, null, 2));
+            return { success: false, error: 'No image data. Full Response: ' + JSON.stringify(data) };
 
         } catch (error: any) {
             console.error('Seedream Img-to-Img Error:', error.message);
