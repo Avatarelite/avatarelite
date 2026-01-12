@@ -42,7 +42,7 @@ export class SeedreamService {
                     'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                timeout: 60000 // 60s timeout for generation
+                timeout: 180000 // 180s timeout for generation
             });
 
             const data = response.data;
@@ -54,7 +54,8 @@ export class SeedreamService {
                     return { success: true, imageUrl: item.url };
                 }
             }
-            return { success: false, error: 'No image data in response' };
+            console.error("No image data found. Full Response:", JSON.stringify(data, null, 2));
+            return { success: false, error: 'No image data. Full Response: ' + JSON.stringify(data) };
 
         } catch (error: any) {
             console.error('Seedream Text-to-Image Error:', error.message);

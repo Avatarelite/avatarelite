@@ -63,15 +63,23 @@ export async function startBot(app: Application) {
 
     // Determine environment (Webhook vs Polling)
     const webhookUrl = process.env.WEBHOOK_URL || process.env.RENDER_EXTERNAL_URL || (`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`);
-    const isProduction = !!webhookUrl;
+    const isProduction = !!webhookUrl && webhookUrl !== 'undefined' && !webhookUrl.includes('undefined');
+
+    console.log(`Debug Env: WEBHOOK_URL=${process.env.WEBHOOK_URL}, RENDER=${process.env.RENDER_EXTERNAL_URL}, RAILWAY=${process.env.RAILWAY_PUBLIC_DOMAIN}, Computed=${webhookUrl}, isProduction=${isProduction}`);
 
     if (isProduction) {
         console.log(`Starting bot in WEBHOOK mode. URL: ${webhookUrl}`);
         bot = new TelegramBot(token, { polling: false });
 
         // Set up the webhook
-        const finalUrl = `${webhookUrl}/bot${token}`;
-        await bot.setWebHook(finalUrl);
+        if (webhookUrl && webhookUrl !== 'undefined') {
+            const finalUrl = `${webhookUrl}/bot${token}`;
+            await bot.setWebHook(finalUrl);
+        } else {
+            console.warn("Webhook URL invalid, falling back to polling internals despite isProduction flag (should not happen normally)");
+            // Actually, if we are here, isProduction is true, so we MUST have a webhook or we fail.
+            // But let's fail gracefully if the URL is weird.
+        }
 
         // Add route handler
         app.post(`/bot${token}`, (req, res) => {
@@ -786,6 +794,7 @@ Select an action:
                 }
             }
         } else {
+            // If there's extra debug info in the error string (like JSON), it will be shown here.
             bot.sendMessage(chatId, `❌ Error: ${result.error}`);
         }
     }
