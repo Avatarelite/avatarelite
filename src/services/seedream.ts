@@ -11,8 +11,8 @@ interface GenerateImageResponse {
 }
 
 export class SeedreamService {
-    private baseUrl = 'https://ark.cn-beijing.volces.com/api/v3';
-    private modelId = 'seedream-4-5-251128'; // Can be overridden
+    private baseUrl = 'https://open.byteplus.com/v1';
+    private modelId = 'seedream-4-5-251128';
 
     private getApiKey(): string {
         if (!config.seedreamApiKey) {
@@ -26,7 +26,6 @@ export class SeedreamService {
         const apiKey = this.getApiKey();
         if (!apiKey) return { success: false, error: 'API Key missing' };
 
-        // Convert aspect ratio to size
         const size = this.mapAspectRatioToSize(aspectRatio);
 
         try {
